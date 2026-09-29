@@ -7,10 +7,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
-        html, body {
-            width: 100%;
-            overflow-x: hidden;
-        }
+        html, body { width: 100%; overflow-x: hidden; }
         body {
             font-family: "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
             background: #071a12;
@@ -19,7 +16,6 @@
             cursor: none;
         }
 
-        /* ===== 自定义光标 ===== */
         #cursor-dot {
             position: fixed; top: 0; left: 0;
             width: 10px; height: 10px;
@@ -72,6 +68,52 @@
             100% { opacity: 0; }
         }
 
+        .bottom-right-group {
+            position: fixed;
+            bottom: 5%;
+            right: 5%;
+            z-index: 10000;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .icon-btn {
+            width: clamp(44px, 4vw, 56px);
+            height: clamp(44px, 4vw, 56px);
+            border-radius: 50%;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.5);
+            color: white;
+            font-size: clamp(18px, 1.6vw, 24px);
+            cursor: none;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.5s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-family: inherit;
+        }
+        .icon-btn:hover { background: rgba(0,0,0,0.55); transform: scale(1.1); }
+
+        .page-transition {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #071a12; z-index: 999999;
+            pointer-events: none;
+            opacity: 0;
+        }
+        .page-transition.enter {
+            animation: pageEnterAnim 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        @keyframes pageEnterAnim {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        .page-transition.exit {
+            opacity: 1 !important;
+            animation: none;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         /* ==================== 第一屏 ==================== */
         .baike-hero {
             position: relative;
@@ -100,8 +142,7 @@
         .baike-hero-mask {
             position: absolute;
             top: 0; left: 0;
-            width: 75%;
-            height: 100%;
+            width: 75%; height: 100%;
             z-index: 1;
             pointer-events: none;
             background: radial-gradient(
@@ -119,13 +160,7 @@
             width: 100%; height: 18%;
             z-index: 2;
             pointer-events: none;
-            background: linear-gradient(
-                to bottom,
-                transparent 0%,
-                rgba(7, 26, 18, 0.4) 50%,
-                rgba(7, 26, 18, 0.9) 90%,
-                #071a12 100%
-            );
+            background: linear-gradient(to bottom, transparent 0%, rgba(7, 26, 18, 0.4) 50%, rgba(7, 26, 18, 0.9) 90%, #071a12 100%);
         }
 
         .baike-hero-content {
@@ -135,7 +170,7 @@
         }
 
         .baike-hero-tag {
-            font-size: 14px;
+            font-size: clamp(12px, 1vw, 14px);
             font-weight: 400;
             letter-spacing: 0.8em;
             color: #82e6b4;
@@ -148,7 +183,7 @@
         }
 
         .baike-hero-title {
-            font-size: clamp(48px, 5.5vw, 84px);
+            font-size: clamp(36px, 5.5vw, 84px);
             font-weight: 300;
             letter-spacing: 0.15em;
             line-height: 1.3;
@@ -165,7 +200,7 @@
         }
 
         .baike-hero-desc {
-            font-size: clamp(14px, 1.15vw, 16px);
+            font-size: clamp(13px, 1.15vw, 16px);
             font-weight: 300;
             line-height: 2.2;
             letter-spacing: 0.15em;
@@ -176,9 +211,7 @@
             animation: baikeFadeUp 1.5s ease 1.2s forwards;
         }
 
-        @keyframes baikeFadeUp {
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes baikeFadeUp { to { opacity: 1; transform: translateY(0); } }
 
         .viewfinder {
             position: absolute;
@@ -189,9 +222,7 @@
             opacity: 0;
             animation: viewfinderIn 1.8s ease 1.6s forwards;
         }
-        @keyframes viewfinderIn {
-            to { opacity: 1; }
-        }
+        @keyframes viewfinderIn { to { opacity: 1; } }
 
         .vf-corner {
             position: absolute;
@@ -226,11 +257,8 @@
             box-shadow: 0 0 12px rgba(130, 230, 180, 0.3);
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .vf-center::before,
-        .vf-center::after {
-            content: '';
-            position: absolute;
-            background: rgba(130, 230, 180, 0.85);
+        .vf-center::before, .vf-center::after {
+            content: ''; position: absolute; background: rgba(130, 230, 180, 0.85);
         }
         .vf-center::before { top: 50%; left: -12px; width: 8px; height: 1px; transform: translateY(-50%); }
         .vf-center::after { top: 50%; right: -12px; width: 8px; height: 1px; transform: translateY(-50%); }
@@ -241,7 +269,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 11px;
+            font-size: clamp(9px, 0.85vw, 11px);
             letter-spacing: 0.2em;
             color: rgba(255, 255, 255, 0.7);
             text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
@@ -259,49 +287,40 @@
             box-shadow: 0 0 8px rgba(255, 77, 77, 0.8);
             animation: recBlink 2s ease-in-out infinite;
         }
-        @keyframes recBlink {
-            0%, 100% { opacity: 1; }
-            50%      { opacity: 0.3; }
-        }
+        @keyframes recBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         .shutter-btn {
             position: absolute;
-            bottom: 55px;
-            left: 50%;
+            bottom: 55px; left: 50%;
             transform: translateX(-50%);
             z-index: 8;
-            width: 80px; height: 80px;
+            width: clamp(64px, 6vw, 80px);
+            height: clamp(64px, 6vw, 80px);
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 2px solid rgba(255, 255, 255, 0.7);
             cursor: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: 0 0 40px rgba(255, 255, 255, 0.15), inset 0 0 20px rgba(255, 255, 255, 0.1);
             opacity: 0;
             animation: baikeFadeUp 1.5s ease 2s forwards;
         }
         .shutter-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 56px; height: 56px;
+            content: ''; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 70%; height: 70%;
             border-radius: 50%;
             border: 2px solid rgba(255, 255, 255, 0.85);
             background: rgba(255, 255, 255, 0.05);
             transition: all 0.3s ease;
         }
         .shutter-btn::after {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 34px; height: 34px;
+            content: ''; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 42%; height: 42%;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.9);
             transition: all 0.3s ease;
@@ -314,15 +333,13 @@
         .shutter-btn:hover::before { border-color: #82e6b4; }
         .shutter-btn:hover::after { background: #82e6b4; }
         .shutter-btn:active { transform: translateX(-50%) scale(0.9); }
-        .shutter-btn.clicking::before { width: 22px; height: 22px; border-color: #82e6b4; }
-        .shutter-btn.clicking::after { width: 8px; height: 8px; background: #82e6b4; }
+        .shutter-btn.clicking::before { width: 25%; height: 25%; border-color: #82e6b4; }
+        .shutter-btn.clicking::after { width: 10%; height: 10%; background: #82e6b4; }
 
-        .baike-hero.capturing .viewfinder {
-            animation: viewfinderFlash 0.5s ease-out;
-        }
+        .baike-hero.capturing .viewfinder { animation: viewfinderFlash 0.5s ease-out; }
         @keyframes viewfinderFlash {
-            0%   { opacity: 1; filter: brightness(1); }
-            20%  { opacity: 1; filter: brightness(2.5); }
+            0% { opacity: 1; filter: brightness(1); }
+            20% { opacity: 1; filter: brightness(2.5); }
             100% { opacity: 1; filter: brightness(1); }
         }
         .baike-hero.capturing .vf-center {
@@ -333,11 +350,10 @@
 
         .shutter-hint {
             position: absolute;
-            bottom: 20px;
-            left: 50%;
+            bottom: 20px; left: 50%;
             transform: translateX(-50%);
             z-index: 6;
-            font-size: 11px;
+            font-size: clamp(10px, 0.9vw, 11px);
             font-weight: 400;
             letter-spacing: 0.5em;
             color: rgba(255, 255, 255, 0.7);
@@ -356,22 +372,23 @@
             align-items: center;
             gap: 10px;
             padding: 12px 28px;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.25);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 50px;
             color: #ffffff;
-            font-size: 13px;
+            font-size: clamp(11px, 1vw, 13px);
             letter-spacing: 0.2em;
             text-decoration: none;
             transition: all 0.5s ease;
             font-family: inherit;
             opacity: 0;
             animation: baikeFadeUp 1.5s ease 0.8s forwards;
+            cursor: none;
         }
         .back-btn:hover {
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.55);
             border-color: #82e6b4;
             box-shadow: 0 0 30px rgba(130, 230, 180, 0.4);
         }
@@ -434,6 +451,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: none;
         }
 
         .story-image-frame img {
@@ -445,10 +463,18 @@
             display: block;
             transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
             will-change: opacity, transform;
+            transform-origin: center center;
+            user-select: none;
+            -webkit-user-drag: none;
         }
         .story-image-frame img.leaving {
             opacity: 0;
             transform: scale(0.96);
+        }
+
+        /* 放大时禁用过渡，拖动才跟手 */
+        .story-image-frame img.dragging {
+            transition: none !important;
         }
 
         .story-image-frame::after {
@@ -456,13 +482,31 @@
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: radial-gradient(
-                circle 320px at var(--mx, 50%) var(--my, 50%),
-                rgba(255, 255, 255, 0.08) 0%,
-                transparent 60%
-            );
+            background: radial-gradient(circle 320px at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.08) 0%, transparent 60%);
             pointer-events: none;
             transition: background 0.15s ease-out;
+        }
+
+        /* 双击提示 */
+        .story-image-frame .zoom-hint {
+            position: absolute;
+            bottom: 12px;
+            right: 14px;
+            z-index: 3;
+            font-size: clamp(10px, 0.9vw, 12px);
+            letter-spacing: 0.15em;
+            color: rgba(255, 255, 255, 0.55);
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+            padding: 6px 12px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 20px;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        .story-image-frame.zoomed .zoom-hint {
+            opacity: 0;
         }
 
         .story-album-bar {
@@ -471,6 +515,8 @@
             justify-content: space-between;
             margin-top: 20px;
             padding: 0 4px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .story-page-indicator {
@@ -479,20 +525,18 @@
             gap: 10px;
         }
         .story-page-indicator .dot {
-            width: 6px;
-            height: 6px;
+            width: 6px; height: 6px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.25);
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .story-page-indicator .dot.active {
-            width: 22px;
-            border-radius: 4px;
+            width: 22px; border-radius: 4px;
             background: #82e6b4;
             box-shadow: 0 0 12px rgba(130, 230, 180, 0.6);
         }
         .story-page-indicator .count {
-            font-size: 12px;
+            font-size: clamp(11px, 1vw, 12px);
             letter-spacing: 0.2em;
             color: rgba(255, 255, 255, 0.5);
             margin-left: 8px;
@@ -516,7 +560,7 @@
             border: 1px solid rgba(130, 230, 180, 0.4);
             border-radius: 40px;
             color: #ffffff;
-            font-size: 12px;
+            font-size: clamp(11px, 1vw, 12px);
             letter-spacing: 0.15em;
             cursor: none;
             transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -548,7 +592,7 @@
             will-change: transform, opacity;
         }
         .story-text .tag {
-            font-size: 13px;
+            font-size: clamp(11px, 1vw, 13px);
             font-weight: 400;
             letter-spacing: 0.8em;
             color: #82e6b4;
@@ -558,7 +602,7 @@
             transition: opacity 0.4s ease, transform 0.4s ease;
         }
         .story-text h2 {
-            font-size: clamp(28px, 2.8vw, 42px);
+            font-size: clamp(22px, 2.8vw, 42px);
             font-weight: 300;
             letter-spacing: 0.12em;
             line-height: 1.5;
@@ -572,7 +616,7 @@
             font-weight: 400;
         }
         .story-text p {
-            font-size: clamp(13px, 1.05vw, 15px);
+            font-size: clamp(12px, 1.05vw, 15px);
             font-weight: 300;
             line-height: 2.1;
             letter-spacing: 0.12em;
@@ -582,10 +626,7 @@
             transition: opacity 0.4s ease, transform 0.4s ease;
         }
         .story-text p:last-child { margin-bottom: 0; }
-        .story-text p .green {
-            color: #82e6b4;
-            font-weight: 400;
-        }
+        .story-text p .green { color: #82e6b4; font-weight: 400; }
 
         .story-text.fading .tag,
         .story-text.fading h2,
@@ -602,8 +643,9 @@
             }
             .story-image-frame { height: 40vh; }
             .baike-hero { padding: 0 8%; }
+            .back-btn { top: 20px; left: 20px; padding: 10px 20px; }
+            .baike-hero-title { font-size: clamp(32px, 8vw, 60px); }
         }
-
     </style>
 </head>
 <body>
@@ -624,20 +666,16 @@
         <div class="vf-corner vf-tr"></div>
         <div class="vf-corner vf-bl"></div>
         <div class="vf-corner vf-br"></div>
-
         <div class="vf-grid-line vf-line-h1"></div>
         <div class="vf-grid-line vf-line-h2"></div>
         <div class="vf-grid-line vf-line-v1"></div>
         <div class="vf-grid-line vf-line-v2"></div>
-
         <div class="vf-center" id="vf-center"></div>
-
         <div class="vf-info vf-info-top">
             <span><span class="dot"></span>REC</span>
             <span>4K · 24FPS</span>
             <span>ISO 200</span>
         </div>
-
         <div class="vf-info vf-info-bottom">
             <span>F/2.8</span>
             <span>1/250</span>
@@ -672,6 +710,7 @@
         <div class="story-image-wrap" id="story-image-wrap">
             <div class="story-image-frame" id="story-image-frame">
                 <img id="story-image" src="bg6.jpg" alt="红树林" onerror="this.src='bg5.jpg'">
+                <div class="zoom-hint">双击放大 · 拖动查看</div>
             </div>
 
             <div class="story-album-bar">
@@ -702,28 +741,90 @@
             <div class="tag" id="story-tag">红 树 林 的 根</div>
             <h2 id="story-title">为什么它要<br><span class="highlight">长出这么奇怪的根</span>？</h2>
             <div id="story-paragraphs">
-                <p>
-                    红树林生活在潮间带，每天都被咸水反复淹没。普通的树根无法在缺氧、高盐的淤泥里呼吸。
-                </p>
-                <p>
-                    所以红树林进化出了<span class="green">支柱根</span>和<span class="green">呼吸根</span>——它们从树干伸出，像拱门一样撑在泥上，把一部分根露出水面，直接呼吸空气。
-                </p>
-                <p>
-                    这些根不仅能让红树林活下来，还能<span class="green">削弱海浪、固定泥沙</span>。一道成熟的根系，就是一道天然的防波堤。
-                </p>
+                <p>红树林生活在潮间带，每天都被咸水反复淹没。普通的树根无法在缺氧、高盐的淤泥里呼吸。</p>
+                <p>所以红树林进化出了<span class="green">支柱根</span>和<span class="green">呼吸根</span>——它们从树干伸出，像拱门一样撑在泥上，把一部分根露出水面，直接呼吸空气。</p>
+                <p>这些根不仅能让红树林活下来，还能<span class="green">削弱海浪、固定泥沙</span>。一道成熟的根系，就是一道天然的防波堤。</p>
             </div>
         </div>
     </div>
 </section>
 
+<div class="bottom-right-group">
+    <button class="icon-btn" id="sound-toggle" onclick="toggleSound(event)">🔇</button>
+</div>
+
+<audio id="bgm" loop>
+    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=calm-nature-113679.mp3" type="audio/mpeg">
+</audio>
+
+<div class="page-transition enter" id="pageTransition"></div>
+
 <script>
-    // ==================== 页面加载时强制滚动到顶部（关键修复） ====================
+    // ==================== 页面加载时强制滚动到顶部 ====================
     if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual';
     }
     window.scrollTo(0, 0);
     window.addEventListener('load', () => {
         window.scrollTo(0, 0);
+    });
+
+    // ==================== 音乐逻辑 ====================
+    const bgm = document.getElementById('bgm');
+    const soundBtn = document.getElementById('sound-toggle');
+    let musicOn = localStorage.getItem('mangroveMusicOn') !== 'false';
+
+    function updateSoundBtn() {
+        soundBtn.innerText = bgm.paused ? '🔇' : '🔊';
+    }
+
+    function tryPlayMusic() {
+        if (musicOn && bgm.paused) {
+            bgm.play().catch(() => {});
+        }
+    }
+
+    function toggleSound(event) {
+        if (event) event.stopPropagation();
+        if (bgm.paused) {
+            bgm.play().then(() => {
+                musicOn = true;
+                localStorage.setItem('mangroveMusicOn', 'true');
+                updateSoundBtn();
+            }).catch(()=>{});
+        } else {
+            bgm.pause();
+            musicOn = false;
+            localStorage.setItem('mangroveMusicOn', 'false');
+            updateSoundBtn();
+        }
+    }
+
+    bgm.addEventListener('play', updateSoundBtn);
+    bgm.addEventListener('pause', updateSoundBtn);
+    window.addEventListener('load', tryPlayMusic);
+    document.addEventListener('click', function onceClick() {
+        if (musicOn && bgm.paused) bgm.play().catch(()=>{});
+        document.removeEventListener('click', onceClick);
+    });
+    updateSoundBtn();
+
+    // ==================== 页面过渡 ====================
+    const transition = document.getElementById('pageTransition');
+
+    function navigateTo(url) {
+        transition.classList.remove('enter');
+        transition.classList.add('exit');
+        setTimeout(() => {
+            window.location.href = url;
+        }, 600);
+    }
+
+    document.querySelectorAll('a[href$=".html"], a[href*=".html?"]').forEach(a => {
+        a.addEventListener('click', function(e) {
+            e.preventDefault();
+            navigateTo(this.getAttribute('href'));
+        });
     });
 
     // ==================== 自定义光标 ====================
@@ -753,7 +854,7 @@
     }
     animateCursor();
 
-    const interactiveElements = document.querySelectorAll('.back-btn, .shutter-btn, .story-image-wrap, .story-nav-btn');
+    const interactiveElements = document.querySelectorAll('.back-btn, .shutter-btn, .story-image-wrap, .story-nav-btn, .icon-btn');
     interactiveElements.forEach(el => {
         el.addEventListener('mouseenter', () => document.body.classList.add('hover-interactive'));
         el.addEventListener('mouseleave', () => document.body.classList.remove('hover-interactive'));
@@ -763,6 +864,7 @@
     const canvas = document.getElementById('ripple-canvas');
     const ctx = canvas.getContext('2d');
     let ripples = [];
+    let albumHovering = false;
 
     function resizeCanvas() {
         canvas.width = window.innerWidth;
@@ -773,6 +875,8 @@
 
     let lastRippleTime = 0;
     document.addEventListener('mousemove', (e) => {
+        if (albumHovering) return;
+
         const heroRect = document.getElementById('baike-hero').getBoundingClientRect();
         const storyRect = document.getElementById('baike-story').getBoundingClientRect();
 
@@ -795,13 +899,9 @@
         lastRippleTime = now;
 
         ripples.push({
-            x: e.clientX,
-            y: e.clientY,
-            radius: 0,
-            maxRadius: 70 + Math.random() * 50,
-            alpha: 0.65,
-            speed: 1.3 + Math.random() * 0.5,
-            rings: 4
+            x: e.clientX, y: e.clientY,
+            radius: 0, maxRadius: 70 + Math.random() * 50,
+            alpha: 0.65, speed: 1.3 + Math.random() * 0.5, rings: 4
         });
     });
 
@@ -840,6 +940,119 @@
         requestAnimationFrame(drawRipples);
     }
     drawRipples();
+
+    // ==================== 图片交互：悬停 + 双击放大 + 拖动查看 + 镜头跟随 ====================
+    const imageFrame = document.getElementById('story-image-frame');
+    const storyImage = document.getElementById('story-image');
+
+    let albumZoomed = false;       // 是否处于放大状态
+    let isDragging = false;        // 是否正在拖动
+    let dragStartX = 0, dragStartY = 0;
+    let currentX = 0, currentY = 0; // 当前平移偏移
+
+    const ZOOM_SCALE = 2.5;        // 放大倍数
+
+    // 鼠标进入相册：暂停水波纹
+    imageFrame.addEventListener('mouseenter', () => {
+        albumHovering = true;
+        ripples.length = 0;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+    // 鼠标离开相册：恢复水波纹
+    imageFrame.addEventListener('mouseleave', () => {
+        albumHovering = false;
+        isDragging = false;
+        if (!albumZoomed) {
+            // 没放大时归位
+            storyImage.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+            storyImage.style.transform = 'translate(0, 0) scale(1)';
+            currentX = 0;
+            currentY = 0;
+        }
+    });
+
+    // 双击切换放大/还原
+    imageFrame.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        albumZoomed = !albumZoomed;
+        storyImage.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+
+        if (albumZoomed) {
+            // 放大
+            currentX = 0;
+            currentY = 0;
+            storyImage.style.transform = `translate(0, 0) scale(${ZOOM_SCALE})`;
+            imageFrame.classList.add('zoomed');
+        } else {
+            // 还原
+            currentX = 0;
+            currentY = 0;
+            storyImage.style.transform = 'translate(0, 0) scale(1)';
+            imageFrame.classList.remove('zoomed');
+        }
+    });
+
+    // 放大状态下按下鼠标 → 开始拖动
+    imageFrame.addEventListener('mousedown', (e) => {
+        if (!albumZoomed) return;
+        e.preventDefault();
+        isDragging = true;
+        dragStartX = e.clientX - currentX;
+        dragStartY = e.clientY - currentY;
+        storyImage.classList.add('dragging');
+    });
+
+    // 全局 mousemove：拖动 or 镜头跟随
+    document.addEventListener('mousemove', (e) => {
+        // 拖动中
+        if (isDragging && albumZoomed) {
+            currentX = e.clientX - dragStartX;
+            currentY = e.clientY - dragStartY;
+
+            // 限制拖动范围，避免拖出太远
+            const rect = imageFrame.getBoundingClientRect();
+            const maxX = rect.width * (ZOOM_SCALE - 1) / 2;
+            const maxY = rect.height * (ZOOM_SCALE - 1) / 2;
+            currentX = Math.max(-maxX, Math.min(maxX, currentX));
+            currentY = Math.max(-maxY, Math.min(maxY, currentY));
+
+            storyImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${ZOOM_SCALE})`;
+            return;
+        }
+    });
+
+    // 全局 mouseup：停止拖动
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            storyImage.classList.remove('dragging');
+        }
+    });
+
+    // 镜头跟随：仅在未放大、未拖动时生效
+    imageFrame.addEventListener('mousemove', (e) => {
+        if (albumZoomed || isDragging) return;
+
+        const rect = imageFrame.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+
+        const x = (e.clientX - cx) / (rect.width / 2);
+        const y = (e.clientY - cy) / (rect.height / 2);
+
+        const shiftX = x * 8;
+        const shiftY = y * 8;
+
+        storyImage.style.transform = `translate(${shiftX}px, ${shiftY}px)`;
+
+        const mx = ((e.clientX - rect.left) / rect.width) * 100;
+        const my = ((e.clientY - rect.top) / rect.height) * 100;
+        imageFrame.style.setProperty('--mx', mx + '%');
+        imageFrame.style.setProperty('--my', my + '%');
+    });
 
     // ==================== 快门音效 ====================
     function playShutterSound() {
@@ -945,33 +1158,6 @@
     window.addEventListener('resize', updateStoryScroll);
     updateStoryScroll();
 
-    // ==================== 图片内部视差跟随 ====================
-    const imageFrame = document.getElementById('story-image-frame');
-    const storyImage = document.getElementById('story-image');
-
-    imageFrame.addEventListener('mousemove', (e) => {
-        const rect = imageFrame.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-
-        const x = (e.clientX - cx) / (rect.width / 2);
-        const y = (e.clientY - cy) / (rect.height / 2);
-
-        const shiftX = x * 8;
-        const shiftY = y * 8;
-
-        storyImage.style.transform = `translate(${shiftX}px, ${shiftY}px)`;
-
-        const mx = ((e.clientX - rect.left) / rect.width) * 100;
-        const my = ((e.clientY - rect.top) / rect.height) * 100;
-        imageFrame.style.setProperty('--mx', mx + '%');
-        imageFrame.style.setProperty('--my', my + '%');
-    });
-
-    imageFrame.addEventListener('mouseleave', () => {
-        storyImage.style.transform = 'translate(0, 0)';
-    });
-
     // ==================== 相册数据 ====================
     const albumData = [
         {
@@ -1020,6 +1206,16 @@
     function switchAlbum(index) {
         if (index === currentAlbumIndex || isSwitching) return;
         isSwitching = true;
+
+        // 切换时重置放大状态、位置、拖动状态
+        albumZoomed = false;
+        isDragging = false;
+        currentX = 0;
+        currentY = 0;
+        imageFrame.classList.remove('zoomed');
+        storyImage.classList.remove('dragging');
+        storyImage.style.transition = 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+        storyImage.style.transform = 'translate(0, 0) scale(1)';
 
         storyImage.classList.add('leaving');
         storyText.classList.add('fading');
