@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>红树林百科</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -16,12 +16,13 @@
             cursor: none;
         }
 
+        /* ===== 自定义光标 ===== */
         #cursor-dot {
             position: fixed; top: 0; left: 0;
             width: 10px; height: 10px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 0 12px rgba(255, 255, 255, 0.9), 0 0 30px rgba(130, 230, 180, 0.7), 0 0 60px rgba(130, 230, 180, 0.4);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.95), 0 0 30px rgba(255, 200, 150, 0.8), 0 0 60px rgba(255, 200, 150, 0.5);
             pointer-events: none;
             z-index: 9999;
             transform: translate(-50%, -50%);
@@ -31,14 +32,14 @@
             position: fixed; top: 0; left: 0;
             width: 40px; height: 40px;
             border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.5);
             pointer-events: none;
             z-index: 9998;
             transform: translate(-50%, -50%);
             transition: width 0.3s ease, height 0.3s ease, border-color 0.3s ease;
         }
-        body.hover-interactive #cursor-dot { width: 18px; height: 18px; background: rgba(130, 230, 180, 1); }
-        body.hover-interactive #cursor-ring { width: 60px; height: 60px; border-color: rgba(130, 230, 180, 0.8); }
+        body.hover-interactive #cursor-dot { width: 18px; height: 18px; background: rgba(255, 210, 170, 1); }
+        body.hover-interactive #cursor-ring { width: 60px; height: 60px; border-color: rgba(255, 210, 170, 0.9); }
         @media (hover: none) {
             #cursor-dot, #cursor-ring { display: none; }
             body { cursor: auto; }
@@ -194,10 +195,7 @@
             transform: translateY(30px);
             animation: baikeFadeUp 1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
         }
-        .baike-hero-title .highlight {
-            color: #82e6b4;
-            font-weight: 400;
-        }
+        .baike-hero-title .highlight { color: #82e6b4; font-weight: 400; }
 
         .baike-hero-desc {
             font-size: clamp(13px, 1.15vw, 16px);
@@ -452,7 +450,9 @@
             align-items: center;
             justify-content: center;
             cursor: none;
+            touch-action: pan-y;
         }
+        .story-image-frame.zoomed { touch-action: none; }
 
         .story-image-frame img {
             max-width: 100%;
@@ -466,16 +466,13 @@
             transform-origin: center center;
             user-select: none;
             -webkit-user-drag: none;
+            -webkit-touch-callout: none;
         }
         .story-image-frame img.leaving {
             opacity: 0;
             transform: scale(0.96);
         }
-
-        /* 放大时禁用过渡，拖动才跟手 */
-        .story-image-frame img.dragging {
-            transition: none !important;
-        }
+        .story-image-frame img.dragging { transition: none !important; }
 
         .story-image-frame::after {
             content: '';
@@ -487,7 +484,6 @@
             transition: background 0.15s ease-out;
         }
 
-        /* 双击提示 */
         .story-image-frame .zoom-hint {
             position: absolute;
             bottom: 12px;
@@ -505,9 +501,7 @@
             pointer-events: none;
             transition: opacity 0.4s ease;
         }
-        .story-image-frame.zoomed .zoom-hint {
-            opacity: 0;
-        }
+        .story-image-frame.zoomed .zoom-hint { opacity: 0; }
 
         .story-album-bar {
             display: flex;
@@ -635,16 +629,512 @@
             transform: translateY(10px);
         }
 
+        /* ==================== 第三屏：一排分类卡片 + 大图展示 ==================== */
+        .baike-categories {
+            position: relative;
+            height: 100vh;
+            overflow: hidden;
+            background: #071a12;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5%;
+        }
+
+        .cat-bg-wrap {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            transform: translateY(-100%);
+            opacity: 0;
+            will-change: transform, opacity;
+        }
+
+        .cat-bg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            filter: brightness(1.45) saturate(1.2) contrast(1.05);
+            pointer-events: none;
+        }
+
+        .cat-bg-mask {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            background: radial-gradient(ellipse at center,
+                rgba(7, 26, 18, 0.1) 0%,
+                rgba(7, 26, 18, 0.5) 100%);
+        }
+
+        .cat-stage {
+            position: relative;
+            z-index: 5;
+            width: 100%;
+            max-width: 1100px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(10px, 1.5vh, 20px);
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.9s ease, transform 0.9s ease;
+        }
+        .cat-stage.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== 分类大图展示区 ===== */
+        .cat-display {
+            position: relative;
+            width: 100%;
+            flex: 1;
+            max-height: 58vh;
+            min-height: 260px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow:
+                0 30px 80px rgba(0, 0, 0, 0.6),
+                0 0 100px rgba(255, 200, 150, 0.15),
+                0 0 0 1px rgba(255, 225, 195, 0.4);
+            background: rgba(10, 26, 18, 0.6);
+            display: flex;
+            align-items: flex-end;
+        }
+
+        /* 关键：大图统一大小，不裁剪。使用 contain 确保整张图完整显示 */
+        .cat-display-image {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: contain;      /* 保证图片完整展示，不裁剪！ */
+            object-position: center;
+            z-index: 1;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            padding: 10px;            /* 稍微留一点边距，让图片和边框有呼吸感 */
+        }
+        .cat-display-image.fading {
+            opacity: 0;
+            transform: scale(1.05);
+        }
+
+        .cat-display::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%; height: 65%;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 40%, transparent 100%);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .cat-display-info {
+            position: relative;
+            z-index: 3;
+            padding: clamp(20px, 3vh, 35px) clamp(24px, 3vw, 40px);
+            width: 100%;
+            text-align: left;
+        }
+
+        .cat-display-tag {
+            display: inline-block;
+            font-size: clamp(10px, 0.9vw, 12px);
+            font-weight: 500;
+            letter-spacing: 0.5em;
+            color: #ffe2c4;
+            padding: 6px 16px 6px 0.5em;
+            margin-bottom: 14px;
+            text-shadow: 0 0 20px rgba(255, 210, 170, 0.9), 0 2px 8px rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 220, 180, 0.5);
+        }
+
+        .cat-display-title {
+            font-size: clamp(30px, 4vw, 52px);
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            color: #ffffff;
+            margin-bottom: 12px;
+            text-shadow: 0 4px 25px rgba(0, 0, 0, 0.95), 0 0 40px rgba(0, 0, 0, 0.7);
+        }
+
+        .cat-display-desc {
+            font-size: clamp(12px, 1.15vw, 16px);
+            font-weight: 300;
+            line-height: 1.9;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.95);
+            max-width: 90%;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95);
+        }
+
+        /* ===== 顶部箭头指示器（居中） ===== */
+        .cat-pointer {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            height: 0;
+        }
+        .cat-pointer::before {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 16px solid transparent;
+            border-right: 16px solid transparent;
+            border-top: 22px solid #ffe2c4;
+            filter: drop-shadow(0 0 20px rgba(255, 210, 170, 1)) drop-shadow(0 0 40px rgba(255, 180, 120, 0.8));
+            animation: arrowBounce 1.6s ease-in-out infinite;
+            position: absolute;
+            top: -12px;
+        }
+        @keyframes arrowBounce {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(6px); }
+        }
+
+        /* ===== 一排分类卡片 ===== */
+        .cat-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: clamp(8px, 1.5vw, 18px);
+            width: 100%;
+            padding: 8px 0;
+            flex-wrap: nowrap;
+        }
+
+        .cat-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: clamp(10px, 1.2vh, 14px) clamp(10px, 1.2vw, 18px);
+            min-width: clamp(64px, 8vw, 90px);
+            border-radius: 16px;
+            background: linear-gradient(135deg,
+                rgba(255, 200, 160, 0.35) 0%,
+                rgba(210, 195, 200, 0.25) 50%,
+                rgba(130, 200, 215, 0.35) 100%);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1.5px solid rgba(255, 225, 195, 0.5);
+            cursor: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            opacity: 0.55;
+            filter: brightness(0.7) blur(0.3px);
+        }
+
+        .cat-card:hover {
+            opacity: 0.85;
+            filter: brightness(0.95) blur(0);
+            transform: translateY(-3px);
+        }
+
+        .cat-card.active {
+            opacity: 1;
+            filter: brightness(1.35) blur(0);
+            background:
+                radial-gradient(circle at 30% 30%, rgba(255, 240, 220, 0.5) 0%, transparent 60%),
+                linear-gradient(135deg,
+                    rgba(255, 225, 185, 1) 0%,
+                    rgba(230, 215, 220, 0.85) 50%,
+                    rgba(165, 230, 240, 1) 100%);
+            border-color: #ffffff;
+            box-shadow:
+                0 15px 50px rgba(255, 200, 150, 0.9),
+                0 0 80px rgba(120, 190, 210, 0.6),
+                inset 0 0 25px rgba(255, 235, 210, 0.6);
+            transform: translateY(-5px);
+        }
+
+        .cat-card-icon {
+            font-size: clamp(22px, 2.2vw, 30px);
+            line-height: 1;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+        }
+
+        .cat-card-name {
+            font-size: clamp(11px, 1vw, 13px);
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: #ffffff;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95), 0 0 10px rgba(0, 0, 0, 0.7);
+            white-space: nowrap;
+        }
+
+        /* ===== 底部控制按钮 ===== */
+        .cat-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(30px, 5vw, 60px);
+            width: 100%;
+            padding: 4px 0 8px;
+        }
+
+        .cat-nav-btn {
+            width: clamp(48px, 5vw, 60px);
+            height: clamp(48px, 5vw, 60px);
+            border-radius: 50%;
+            background: linear-gradient(135deg,
+                rgba(255, 200, 160, 0.75) 0%,
+                rgba(255, 160, 110, 0.65) 100%);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 235, 200, 0.95);
+            color: #ffffff;
+            cursor: none;
+            font-size: clamp(20px, 1.8vw, 24px);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow:
+                0 0 30px rgba(255, 200, 150, 0.5),
+                inset 0 0 15px rgba(255, 220, 180, 0.3);
+            font-family: inherit;
+            line-height: 1;
+        }
+        .cat-nav-btn:hover {
+            transform: scale(1.12);
+            box-shadow:
+                0 0 50px rgba(255, 200, 150, 0.9),
+                0 0 100px rgba(255, 180, 130, 0.5),
+                inset 0 0 25px rgba(255, 220, 180, 0.5);
+        }
+        .cat-nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .cat-random-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            padding: clamp(10px, 1.2vh, 14px) clamp(22px, 2.5vw, 32px);
+            border-radius: 50px;
+            background:
+                radial-gradient(circle at 30% 30%, rgba(255, 240, 210, 0.6) 0%, transparent 60%),
+                linear-gradient(135deg,
+                    rgba(255, 200, 160, 0.9) 0%,
+                    rgba(255, 160, 110, 0.8) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2.5px solid rgba(255, 235, 200, 1);
+            color: #ffffff;
+            cursor: none;
+            font-family: inherit;
+            transition: all 0.4s ease;
+            box-shadow:
+                0 0 50px rgba(255, 180, 130, 0.7),
+                inset 0 0 20px rgba(255, 220, 180, 0.4);
+            animation: randomPulse 2.2s ease-in-out infinite;
+        }
+        @keyframes randomPulse {
+            0%, 100% {
+                box-shadow:
+                    0 0 50px rgba(255, 180, 130, 0.7),
+                    inset 0 0 20px rgba(255, 220, 180, 0.4);
+            }
+            50% {
+                box-shadow:
+                    0 0 80px rgba(255, 180, 130, 1),
+                    0 0 140px rgba(255, 180, 130, 0.6),
+                    inset 0 0 30px rgba(255, 220, 180, 0.6);
+            }
+        }
+        .cat-random-btn:hover {
+            transform: scale(1.06);
+            box-shadow:
+                0 0 80px rgba(255, 180, 130, 1),
+                0 0 140px rgba(255, 180, 130, 0.7),
+                inset 0 0 30px rgba(255, 220, 180, 0.6);
+        }
+        .cat-random-btn:active {
+            transform: scale(0.95);
+        }
+        .cat-random-btn.spinning {
+            animation: randomSpin 0.6s linear infinite;
+        }
+        @keyframes randomSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .cat-random-btn .random-icon {
+            font-size: clamp(18px, 1.6vw, 22px);
+            line-height: 1;
+        }
+        .cat-random-btn .random-name {
+            font-size: clamp(10px, 0.9vw, 12px);
+            letter-spacing: 0.2em;
+            padding-left: 0.2em;
+            font-weight: 500;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+        }
+
+        /* ==================== 移动端自适应 ==================== */
         @media (max-width: 900px) {
+            .baike-hero {
+                padding: 0 8% 90px;
+                align-items: center;
+            }
+            .baike-hero-title { font-size: clamp(32px, 8vw, 60px); }
+            .baike-hero-desc { font-size: 14px; }
+
+            .back-btn {
+                top: 20px;
+                left: 20px;
+                padding: 10px 20px;
+                font-size: 12px;
+            }
+
+            .shutter-btn { bottom: 90px; }
+            .shutter-hint { bottom: 60px; }
+
+            .bottom-right-group {
+                bottom: 20px;
+                right: 16px;
+            }
+
+            .baike-story-scroll {
+                height: auto;
+                min-height: 100vh;
+                overflow: visible;
+                padding: 100px 6% 120px;
+                align-items: flex-start;
+            }
+
+            .story-image-wrap {
+                transform: none !important;
+                width: 100%;
+            }
+            .story-text {
+                transform: none !important;
+                opacity: 1 !important;
+                width: 100%;
+            }
+
             .story-inner {
                 flex-direction: column;
-                gap: 30px;
+                gap: 28px;
                 max-width: 100%;
             }
-            .story-image-frame { height: 40vh; }
-            .baike-hero { padding: 0 8%; }
-            .back-btn { top: 20px; left: 20px; padding: 10px 20px; }
-            .baike-hero-title { font-size: clamp(32px, 8vw, 60px); }
+
+            .story-image-frame {
+                height: 42vh;
+                min-height: 260px;
+                touch-action: pan-y;
+            }
+
+            .story-image-frame .zoom-hint {
+                bottom: 10px;
+                right: 10px;
+                font-size: 10px;
+                padding: 5px 10px;
+            }
+
+            .story-album-bar {
+                margin-top: 18px;
+                gap: 12px;
+            }
+
+            .story-nav-btn {
+                padding: 10px 16px;
+                font-size: 11px;
+            }
+
+            .story-text .tag {
+                margin-bottom: 20px;
+                font-size: 11px;
+            }
+            .story-text h2 {
+                font-size: clamp(22px, 6vw, 30px);
+                margin-bottom: 22px;
+            }
+            .story-text p {
+                font-size: 13px;
+                line-height: 2;
+                margin-bottom: 14px;
+            }
+
+            .baike-categories {
+                height: auto;
+                min-height: 100vh;
+                overflow: visible;
+                padding: 80px 5% 120px;
+                align-items: center;
+            }
+            .cat-stage {
+                min-height: calc(100vh - 200px);
+                gap: 16px;
+            }
+            .cat-display {
+                max-height: 42vh;
+                min-height: 220px;
+            }
+            .cat-display-title { font-size: clamp(24px, 6vw, 34px); }
+            .cat-display-desc { font-size: 12px; max-width: 100%; }
+
+            .cat-card {
+                min-width: 60px;
+                padding: 10px 8px;
+                border-radius: 14px;
+                gap: 3px;
+            }
+            .cat-card-icon { font-size: 20px; }
+            .cat-card-name { font-size: 11px; }
+
+            .cat-row { gap: 6px; }
+
+            .cat-nav-btn {
+                width: 46px;
+                height: 46px;
+                font-size: 18px;
+            }
+            .cat-random-btn {
+                padding: 10px 22px;
+            }
+            .cat-random-btn .random-icon { font-size: 18px; }
+            .cat-random-btn .random-name { font-size: 10px; }
+
+            .cat-controls { gap: 25px; }
+        }
+
+        @media (max-width: 380px) {
+            .cat-card {
+                min-width: 54px;
+                padding: 8px 6px;
+            }
+            .cat-card-icon { font-size: 18px; }
+            .cat-card-name { font-size: 10px; }
+
+            .cat-nav-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+            .cat-random-btn {
+                padding: 8px 18px;
+            }
+            .cat-random-btn .random-icon { font-size: 16px; }
+            .cat-random-btn .random-name { font-size: 9px; }
         }
     </style>
 </head>
@@ -746,6 +1236,65 @@
                 <p>这些根不仅能让红树林活下来，还能<span class="green">削弱海浪、固定泥沙</span>。一道成熟的根系，就是一道天然的防波堤。</p>
             </div>
         </div>
+    </div>
+</section>
+
+<!-- ==================== 第三屏：一排分类卡片 + 大图展示 ==================== -->
+<section class="baike-categories" id="baike-categories">
+    <div class="cat-bg-wrap" id="cat-bg-wrap">
+        <img class="cat-bg" src="bg9.jpg" alt="红树林海面" onerror="this.style.display='none'">
+        <div class="cat-bg-mask"></div>
+    </div>
+
+    <div class="cat-stage" id="cat-stage">
+
+        <!-- 大图展示区：图片统一大小，不裁剪 -->
+        <div class="cat-display">
+            <img class="cat-display-image" id="cat-display-image" src="bird.jpg" alt="分类图">
+            <div class="cat-display-info">
+                <div class="cat-display-tag" id="cat-display-tag">红 树 林 的 邻 居</div>
+                <h2 class="cat-display-title" id="cat-display-title">鸟 类</h2>
+                <p class="cat-display-desc" id="cat-display-desc">红树林是候鸟迁徙的重要驿站。白鹭、夜鹭、苍鹭等数十种鸟类在此栖息、觅食和越冬。</p>
+            </div>
+        </div>
+
+        <!-- 顶部箭头指示器 -->
+        <div class="cat-pointer"></div>
+
+        <!-- 一排分类卡片 -->
+        <div class="cat-row" id="cat-row">
+            <div class="cat-card" data-cat="plant">
+                <span class="cat-card-icon">🌿</span>
+                <span class="cat-card-name">植物</span>
+            </div>
+            <div class="cat-card active" data-cat="bird">
+                <span class="cat-card-icon">🕊️</span>
+                <span class="cat-card-name">鸟类</span>
+            </div>
+            <div class="cat-card" data-cat="fish">
+                <span class="cat-card-icon">🐟</span>
+                <span class="cat-card-name">鱼类</span>
+            </div>
+            <div class="cat-card" data-cat="bug">
+                <span class="cat-card-icon">🦗</span>
+                <span class="cat-card-name">虫类</span>
+            </div>
+            <div class="cat-card" data-cat="crab">
+                <span class="cat-card-icon">🦀</span>
+                <span class="cat-card-name">螃蟹</span>
+            </div>
+        </div>
+
+        <!-- 底部控制按钮 -->
+        <div class="cat-controls">
+            <button class="cat-nav-btn" id="cat-prev" aria-label="上一个分类">←</button>
+            <button class="cat-random-btn" id="cat-random">
+                <span class="random-icon">🎲</span>
+                <span class="random-name">随机</span>
+            </button>
+            <button class="cat-nav-btn" id="cat-next" aria-label="下一个分类">→</button>
+        </div>
+
     </div>
 </section>
 
@@ -854,7 +1403,7 @@
     }
     animateCursor();
 
-    const interactiveElements = document.querySelectorAll('.back-btn, .shutter-btn, .story-image-wrap, .story-nav-btn, .icon-btn');
+    const interactiveElements = document.querySelectorAll('.back-btn, .shutter-btn, .story-image-wrap, .story-nav-btn, .icon-btn, .cat-card, .cat-nav-btn, .cat-random-btn');
     interactiveElements.forEach(el => {
         el.addEventListener('mouseenter', () => document.body.classList.add('hover-interactive'));
         el.addEventListener('mouseleave', () => document.body.classList.remove('hover-interactive'));
@@ -879,9 +1428,11 @@
 
         const heroRect = document.getElementById('baike-hero').getBoundingClientRect();
         const storyRect = document.getElementById('baike-story').getBoundingClientRect();
+        const catRect = document.getElementById('baike-categories').getBoundingClientRect();
 
         const inHero = heroRect.top <= 0 && heroRect.bottom >= 0;
         const inStory = storyRect.top <= 0 && storyRect.bottom >= 0;
+        const inCat = catRect.top <= 0 && catRect.bottom >= 0;
 
         let allowRipple = false;
 
@@ -889,6 +1440,8 @@
             const bottomThird = window.innerHeight * (2 / 3);
             if (e.clientY >= bottomThird) allowRipple = true;
         } else if (inStory) {
+            allowRipple = true;
+        } else if (inCat) {
             allowRipple = true;
         }
 
@@ -924,7 +1477,7 @@
                 const ringAlpha = r.alpha * (1 - j * 0.22);
                 ctx.beginPath();
                 ctx.arc(r.x, r.y, ringRadius, 0, Math.PI * 2);
-                ctx.strokeStyle = `rgba(130, 230, 180, ${ringAlpha})`;
+                ctx.strokeStyle = `rgba(255, 210, 170, ${ringAlpha})`;
                 ctx.lineWidth = 1.4 - j * 0.25;
                 ctx.stroke();
             }
@@ -941,30 +1494,27 @@
     }
     drawRipples();
 
-    // ==================== 图片交互：悬停 + 双击放大 + 拖动查看 + 镜头跟随 ====================
+    // ==================== 图片交互（第二屏） ====================
     const imageFrame = document.getElementById('story-image-frame');
     const storyImage = document.getElementById('story-image');
 
-    let albumZoomed = false;       // 是否处于放大状态
-    let isDragging = false;        // 是否正在拖动
+    let albumZoomed = false;
+    let isDragging = false;
     let dragStartX = 0, dragStartY = 0;
-    let currentX = 0, currentY = 0; // 当前平移偏移
+    let currentX = 0, currentY = 0;
 
-    const ZOOM_SCALE = 2.5;        // 放大倍数
+    const ZOOM_SCALE = 2.5;
 
-    // 鼠标进入相册：暂停水波纹
     imageFrame.addEventListener('mouseenter', () => {
         albumHovering = true;
         ripples.length = 0;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     });
 
-    // 鼠标离开相册：恢复水波纹
     imageFrame.addEventListener('mouseleave', () => {
         albumHovering = false;
         isDragging = false;
         if (!albumZoomed) {
-            // 没放大时归位
             storyImage.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
             storyImage.style.transform = 'translate(0, 0) scale(1)';
             currentX = 0;
@@ -972,30 +1522,12 @@
         }
     });
 
-    // 双击切换放大/还原
     imageFrame.addEventListener('dblclick', (e) => {
         e.preventDefault();
         e.stopPropagation();
-
-        albumZoomed = !albumZoomed;
-        storyImage.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
-
-        if (albumZoomed) {
-            // 放大
-            currentX = 0;
-            currentY = 0;
-            storyImage.style.transform = `translate(0, 0) scale(${ZOOM_SCALE})`;
-            imageFrame.classList.add('zoomed');
-        } else {
-            // 还原
-            currentX = 0;
-            currentY = 0;
-            storyImage.style.transform = 'translate(0, 0) scale(1)';
-            imageFrame.classList.remove('zoomed');
-        }
+        toggleZoom();
     });
 
-    // 放大状态下按下鼠标 → 开始拖动
     imageFrame.addEventListener('mousedown', (e) => {
         if (!albumZoomed) return;
         e.preventDefault();
@@ -1005,26 +1537,15 @@
         storyImage.classList.add('dragging');
     });
 
-    // 全局 mousemove：拖动 or 镜头跟随
     document.addEventListener('mousemove', (e) => {
-        // 拖动中
         if (isDragging && albumZoomed) {
             currentX = e.clientX - dragStartX;
             currentY = e.clientY - dragStartY;
-
-            // 限制拖动范围，避免拖出太远
-            const rect = imageFrame.getBoundingClientRect();
-            const maxX = rect.width * (ZOOM_SCALE - 1) / 2;
-            const maxY = rect.height * (ZOOM_SCALE - 1) / 2;
-            currentX = Math.max(-maxX, Math.min(maxX, currentX));
-            currentY = Math.max(-maxY, Math.min(maxY, currentY));
-
+            clampDragPosition();
             storyImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${ZOOM_SCALE})`;
-            return;
         }
     });
 
-    // 全局 mouseup：停止拖动
     document.addEventListener('mouseup', () => {
         if (isDragging) {
             isDragging = false;
@@ -1032,7 +1553,6 @@
         }
     });
 
-    // 镜头跟随：仅在未放大、未拖动时生效
     imageFrame.addEventListener('mousemove', (e) => {
         if (albumZoomed || isDragging) return;
 
@@ -1053,6 +1573,86 @@
         imageFrame.style.setProperty('--mx', mx + '%');
         imageFrame.style.setProperty('--my', my + '%');
     });
+
+    // 触摸事件
+    let touchStartX = 0, touchStartY = 0;
+    let touchStartCX = 0, touchStartCY = 0;
+    let touchMoved = false;
+    let lastTapTime = 0;
+
+    imageFrame.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        const t = e.touches[0];
+        touchStartX = t.clientX;
+        touchStartY = t.clientY;
+        touchStartCX = currentX;
+        touchStartCY = currentY;
+        touchMoved = false;
+
+        if (albumZoomed) {
+            isDragging = true;
+            storyImage.classList.add('dragging');
+        }
+    }, { passive: true });
+
+    imageFrame.addEventListener('touchmove', (e) => {
+        if (e.touches.length !== 1) return;
+        const t = e.touches[0];
+        const dx = t.clientX - touchStartX;
+        const dy = t.clientY - touchStartY;
+
+        if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+            touchMoved = true;
+        }
+
+        if (albumZoomed && isDragging) {
+            if (e.cancelable) e.preventDefault();
+            currentX = touchStartCX + dx;
+            currentY = touchStartCY + dy;
+            clampDragPosition();
+            storyImage.style.transform = `translate(${currentX}px, ${currentY}px) scale(${ZOOM_SCALE})`;
+        }
+    }, { passive: false });
+
+    imageFrame.addEventListener('touchend', (e) => {
+        isDragging = false;
+        storyImage.classList.remove('dragging');
+
+        if (!touchMoved) {
+            const now = Date.now();
+            if (now - lastTapTime < 300) {
+                toggleZoom();
+                lastTapTime = 0;
+            } else {
+                lastTapTime = now;
+            }
+        }
+    });
+
+    function toggleZoom() {
+        albumZoomed = !albumZoomed;
+        storyImage.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+
+        if (albumZoomed) {
+            currentX = 0;
+            currentY = 0;
+            storyImage.style.transform = `translate(0, 0) scale(${ZOOM_SCALE})`;
+            imageFrame.classList.add('zoomed');
+        } else {
+            currentX = 0;
+            currentY = 0;
+            storyImage.style.transform = 'translate(0, 0) scale(1)';
+            imageFrame.classList.remove('zoomed');
+        }
+    }
+
+    function clampDragPosition() {
+        const rect = imageFrame.getBoundingClientRect();
+        const maxX = rect.width * (ZOOM_SCALE - 1) / 2;
+        const maxY = rect.height * (ZOOM_SCALE - 1) / 2;
+        currentX = Math.max(-maxX, Math.min(maxX, currentX));
+        currentY = Math.max(-maxY, Math.min(maxY, currentY));
+    }
 
     // ==================== 快门音效 ====================
     function playShutterSound() {
@@ -1158,7 +1758,7 @@
     window.addEventListener('resize', updateStoryScroll);
     updateStoryScroll();
 
-    // ==================== 相册数据 ====================
+    // ==================== 相册数据（第二屏） ====================
     const albumData = [
         {
             image: 'bg6.jpg',
@@ -1207,7 +1807,6 @@
         if (index === currentAlbumIndex || isSwitching) return;
         isSwitching = true;
 
-        // 切换时重置放大状态、位置、拖动状态
         albumZoomed = false;
         isDragging = false;
         currentX = 0;
@@ -1254,6 +1853,176 @@
         const prevIndex = (currentAlbumIndex - 1 + albumData.length) % albumData.length;
         switchAlbum(prevIndex);
     });
+
+    // ==================== 第三屏：分类切换逻辑 ====================
+    const catBgWrap = document.getElementById('cat-bg-wrap');
+    const catSection = document.getElementById('baike-categories');
+    const catStage = document.getElementById('cat-stage');
+    const catCards = document.querySelectorAll('.cat-card');
+    const catPrev = document.getElementById('cat-prev');
+    const catNext = document.getElementById('cat-next');
+    const catRandom = document.getElementById('cat-random');
+    const catDisplayImage = document.getElementById('cat-display-image');
+    const catDisplayTag = document.getElementById('cat-display-tag');
+    const catDisplayTitle = document.getElementById('cat-display-title');
+    const catDisplayDesc = document.getElementById('cat-display-desc');
+
+    // 你只需要把图片放入文件夹，并命名为 plant.jpg, bird.jpg, fish.jpg, bug.jpg, crab.jpg 即可
+    const categories = [
+        {
+            key: 'plant',
+            displayName: '植 物 类',
+            tag: '红树林的根基',
+            desc: '红树林植物有秋茄、桐花树、白骨壤、红海榄等，进化出了胎生、泌盐、呼吸根等特殊本领。',
+            image: 'plant.jpg'
+        },
+        {
+            key: 'bird',
+            displayName: '鸟 类',
+            tag: '红树林的邻居',
+            desc: '红树林是候鸟迁徙的重要驿站。白鹭、夜鹭、苍鹭等数十种鸟类在此栖息、觅食和越冬。',
+            image: 'bird.jpg'
+        },
+        {
+            key: 'fish',
+            displayName: '鱼 类',
+            tag: '红树林的邻居',
+            desc: '弹涂鱼、青鳉、花鲈等鱼类在红树林根系间穿梭，红树林为幼鱼提供了天然的庇护所。',
+            image: 'fish.jpg'
+        },
+        {
+            key: 'bug',
+            displayName: '虫 类',
+            tag: '红树林的邻居',
+            desc: '红树林有大量昆虫和节肢动物。它们是食物链的基础，也是生态健康的活指标。',
+            image: 'bug.jpg'
+        },
+        {
+            key: 'crab',
+            displayName: '螃 蟹 类',
+            tag: '红树林的邻居',
+            desc: '招潮蟹、相手蟹、厚蟹等清理着红树林的有机碎屑，是这片湿地忠实的清洁工。',
+            image: 'crab.jpg'
+        }
+    ];
+
+    let currentCatIndex = 1;  // 默认选中鸟类
+    let wheelDropped = false;
+    let wheelActive = false;
+
+    // 背景从上往下滑入
+    function updateCatBg() {
+        const rect = catSection.getBoundingClientRect();
+        const vh = window.innerHeight;
+
+        let progress = (vh - rect.top) / vh;
+        progress = Math.max(0, Math.min(1, progress));
+
+        const eased = progress < 0.5
+            ? 2 * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+        const translateY = (1 - eased) * -100;
+        catBgWrap.style.transform = `translateY(${translateY}%)`;
+        catBgWrap.style.opacity = Math.min(progress * 1.4, 1);
+
+        if (progress >= 0.9 && !wheelDropped) {
+            wheelDropped = true;
+            setTimeout(() => {
+                catStage.classList.add('show');
+                wheelActive = true;
+                // 初始化显示鸟类
+                setCategory(1, false);
+            }, 200);
+        }
+        else if (progress < 0.6 && wheelDropped) {
+            wheelDropped = false;
+            wheelActive = false;
+            catStage.classList.remove('show');
+        }
+    }
+
+    // 切换分类（显示不同图 + 文字）
+    function setCategory(index, animate = true) {
+        // 归一化
+        index = ((index % categories.length) + categories.length) % categories.length;
+        currentCatIndex = index;
+
+        // 更新卡片高亮
+        catCards.forEach((card, i) => {
+            card.classList.toggle('active', i === index);
+        });
+
+        const cat = categories[index];
+
+        if (animate) {
+            // 图片淡出淡入
+            catDisplayImage.classList.add('fading');
+            setTimeout(() => {
+                catDisplayImage.src = cat.image;
+                catDisplayTag.textContent = cat.tag;
+                catDisplayTitle.textContent = cat.displayName;
+                catDisplayDesc.textContent = cat.desc;
+
+                requestAnimationFrame(() => {
+                    catDisplayImage.classList.remove('fading');
+                });
+            }, 350);
+        } else {
+            catDisplayImage.src = cat.image;
+            catDisplayTag.textContent = cat.tag;
+            catDisplayTitle.textContent = cat.displayName;
+            catDisplayDesc.textContent = cat.desc;
+        }
+    }
+
+    // 卡片点击
+    catCards.forEach((card, i) => {
+        card.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!wheelActive) return;
+            if (i === currentCatIndex) return;
+            setCategory(i);
+        });
+    });
+
+    // 左箭头：上一个
+    catPrev.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!wheelActive) return;
+        setCategory(currentCatIndex - 1);
+    });
+
+    // 右箭头：下一个
+    catNext.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!wheelActive) return;
+        setCategory(currentCatIndex + 1);
+    });
+
+    // 随机按钮
+    catRandom.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!wheelActive) return;
+
+        catRandom.classList.add('spinning');
+
+        // 随机选一个不同的分类
+        let newIndex = currentCatIndex;
+        while (newIndex === currentCatIndex && categories.length > 1) {
+            newIndex = Math.floor(Math.random() * categories.length);
+        }
+
+        setTimeout(() => {
+            setCategory(newIndex);
+            catRandom.classList.remove('spinning');
+        }, 600);
+    });
+
+    // 滚动 + resize
+    window.addEventListener('scroll', updateCatBg, { passive: true });
+    window.addEventListener('resize', updateCatBg);
+    updateCatBg();
 
     // ==================== 移动端禁用光标 ====================
     if ('ontouchstart' in window) {
